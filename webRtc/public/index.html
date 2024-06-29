@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .messages_container {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 400px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: scroll;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .sent_message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .received_message {
+            background-color: #28a745;
+            color: white;
+            align-self: flex-start;
+        }
+
+        .message p {
+            margin: 0;
+        }
+
+        .input_container {
+            display: flex;
+            margin-top: auto;
+        }
+
+        .input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="messages_container">
+            <div class="messages" id="messages"></div>
+        </div>
+        <form class="input_container" id="form">
+            <input class="input" id="input" placeholder="Send message">
+            <button class="btn" type="submit">Send</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const messages = document.getElementById("messages");
+        const form = document.getElementById("form");
+        const input = document.getElementById("input");
+
+        const userName = prompt("Enter your name:");
+
+        socket.emit("user:join", userName);
+
+        socket.on("global:message", (message) => {
+            addMessage(message, "info");
+        });
+
+        socket.on("message:receive", (payload) => {
+            addMessage(`${payload.name}: ${payload.message}`, "received");
+        });
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const message = input.value.trim();
+            if (message) {
+                addMessage(`You: ${message}`, "sent");
+                socket.emit("message:send", { name: userName, message });
+                input.value = "";
+            }
+        });
+
+        function addMessage(message, type) {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${type === "sent" ? "sent_message" : "received_message"}`;
+            messageDiv.innerHTML = `<p>${message}</p>`;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+    </script>
+    <script>
+        window.embeddedChatbotConfig = {
+            chatbotId: "Pg5yyRVXDhOEFbh4ENXJO",
+            domain: "www.chatbase.co"
+        }
+    </script>
+    <script src="https://www.chatbase.co/embed.min.js" chatbotId="Pg5yyRVXDhOEFbh4ENXJO" domain="www.chatbase.co" defer>
+    </script>
+</body>
+
+</html>
